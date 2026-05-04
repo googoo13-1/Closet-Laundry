@@ -1,0 +1,80 @@
+index.html
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <title>衣服穿着记录</title>
+  <style>
+    body {
+      font-family: Arial;
+      max-width: 600px;
+      margin: 40px auto;
+      background: #fafafa;
+    }
+    h1 { text-align: center; }
+    .card {
+      background: white;
+      padding: 15px;
+      margin: 10px 0;
+      border-radius: 10px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    }
+    button {
+      margin-top: 8px;
+      padding: 6px 10px;
+      cursor: pointer;
+    }
+    .warning {
+      color: red;
+      font-weight: bold;
+    }
+  </style>
+</head>
+
+<body>
+
+<h1>🧺 衣服穿着记录器</h1>
+
+<input id="name" placeholder="输入衣服名字" />
+<button onclick="addCloth()">添加</button>
+
+<div id="list"></div>
+
+<script>
+let clothes = [];
+
+function addCloth() {
+  const name = document.getElementById("name").value;
+  if (!name) return;
+
+  clothes.push({ name, count: 0 });
+  document.getElementById("name").value = "";
+  render();
+}
+
+function wear(index) {
+  clothes[index].count += 1;
+  render();
+}
+
+function render() {
+  const list = document.getElementById("list");
+  list.innerHTML = "";
+
+  clothes.forEach((c, i) => {
+    list.innerHTML += `
+      <div class="card">
+        <div>👗 ${c.name}</div>
+        <div>穿了：${c.count} 次</div>
+
+        ${c.count >= 3 ? '<div class="warning">🧼 该洗了</div>' : ''}
+
+        <button onclick="wear(${i})">今天穿了 +1</button>
+      </div>
+    `;
+  });
+}
+</script>
+
+</body>
+</html>
