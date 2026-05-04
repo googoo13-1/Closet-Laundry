@@ -2,113 +2,218 @@
 <html>
 <head>
   <meta charset="UTF-8" />
-  <title>衣服穿着记录</title>
+  <title>我的云端衣柜 Pro</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <style>
-    body { font-family: Arial; max-width: 600px; margin: 40px auto; background: #fafafa; padding: 0 20px; }
-    h1 { text-align: center; }
-    .nav { text-align: center; margin-bottom: 20px; }
-    .card { background: white; padding: 15px; margin: 10px 0; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
-    button { margin-top: 8px; padding: 6px 12px; cursor: pointer; border-radius: 4px; border: 1px solid #ddd; background: #fff; }
-    button:hover { background: #f0f0f0; }
-    .warning { color: red; font-weight: bold; }
-    input { padding: 6px; border-radius: 4px; border: 1px solid #ddd; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; max-width: 500px; margin: 0 auto; background: #f2f4f7; padding: 15px; color: #333; }
+    h1 { text-align: center; color: #1a1a1a; font-size: 22px; margin-bottom: 20px; }
     
-    /* 页面切换逻辑 CSS */
-    .page { display: none; }
-    .active { display: block; }
-    .settings-item { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eee; padding: 10px 0; }
+    /* 导航 */
+    .nav { display: flex; gap: 10px; margin-bottom: 15px; }
+    .nav button { flex: 1; padding: 12px; border: none; border-radius: 12px; background: #fff; color: #666; font-weight: 600; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.03); }
+    .nav button.active { background: #007AFF; color: white; }
+
+    /* 添加区域 */
+    .add-card { background: white; padding: 20px; border-radius: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); margin-bottom: 20px; }
+    input[type="text"] { width: 100%; padding: 12px; border: 1px solid #eee; border-radius: 8px; margin-bottom: 12px; box-sizing: border-box; background: #f9f9f9; outline: none; }
+    .file-input-wrapper { margin-bottom: 15px; font-size: 14px; color: #666; }
+    .btn-submit { width: 100%; background: #34c759; color: white; border: none; padding: 14px; border-radius: 10px; font-weight: bold; font-size: 16px; cursor: pointer; }
+    
+    /* 衣服卡片 */
+    .cloth-card { background: white; padding: 12px; margin-bottom: 12px; border-radius: 14px; display: flex; gap: 15px; align-items: center; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
+    .cloth-img { width: 85px; height: 85px; border-radius: 10px; object-fit: cover; background: #f0f0f0; flex-shrink: 0; border: 1px solid #eee; }
+    .cloth-info { flex: 1; overflow: hidden; }
+    .cloth-name { font-weight: bold; font-size: 17px; margin-bottom: 4px; white-space: nowrap; text-overflow: ellipsis; overflow: hidden; }
+    .cloth-desc { font-size: 13px; color: #888; margin-bottom: 8px; }
+    .warning { color: #ff3b30; font-size: 12px; font-weight: bold; background: #fff2f1; padding: 2px 6px; border-radius: 4px; display: inline-block; }
+    
+    /* 操作按钮 */
+    .actions { display: flex; flex-direction: column; gap: 8px; }
+    .actions button { padding: 8px 12px; border-radius: 8px; border: 1px solid #eee; background: #fff; cursor: pointer; font-size: 13px; font-weight: 500; }
+    .btn-wear { background: #007AFF !important; color: white !important; border: none !important; }
+
+    /* 全屏加载蒙层 */
+    #loading { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.9); flex-direction: column; justify-content: center; align-items: center; z-index: 1000; font-weight: bold; color: #007AFF; }
+    .spinner { width: 40px; height: 40px; border: 4px solid #f3f3f3; border-top: 4px solid #007AFF; border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 10px; }
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
   </style>
 </head>
 <body>
 
-  <h1>🧺 衣服穿着记录器</h1>
+<div id="loading">
+    <div class="spinner"></div>
+    <span>正在智能压缩并上传...</span>
+</div>
 
-  <div class="nav">
-    <button onclick="showPage('home-page')">🏠 穿着记录</button>
-    <button onclick="showPage('settings-page')">⚙️ 洗涤设置</button>
+<h1>🧺 智能衣柜管家</h1>
+
+<div class="nav">
+  <button id="nav-h" class="active" onclick="togglePage('h')">我的衣柜</button>
+  <button id="nav-s" onclick="togglePage('s')">洗涤设置</button>
+</div>
+
+<div id="page-h">
+  <div class="add-card">
+    <input id="nameIn" type="text" placeholder="衣服叫什么？(如: 蓝色卫衣)">
+    <input id="descIn" type="text" placeholder="备注 (如: 优衣库、左侧第三格)">
+    <div class="file-input-wrapper">
+      <label>📸 拍摄衣服照片：</label>
+      <input type="file" id="fileIn" accept="image/*" capture="camera" style="margin-top:8px; width:100%;">
+    </div>
+    <button class="btn-submit" onclick="handleAdd()">放入衣柜</button>
   </div>
+  <div id="clothList"></div>
+</div>
 
-  <hr>
-
-  <div id="home-page" class="page active">
-    <input id="name" placeholder="输入衣服名字" />
-    <button onclick="addCloth()">添加</button>
-    <div id="list"></div>
+<div id="page-s" style="display:none">
+  <div class="add-card">
+    <h3 style="margin-top:0">衣柜整理</h3>
+    <div id="setList"></div>
   </div>
-
-  <div id="settings-page" class="page">
-    <h3>设置：穿几次需要洗？</h3>
-    <div id="settings-list"></div>
-  </div>
+</div>
 
 <script>
-// 1. 初始化数据，增加 threshold (阈值)
-let clothes = [
-  { name: "毛衣", count: 0, threshold: 3 },
-  { name: "衬衫", count: 0, threshold: 1 }
-];
+  // 已自动填入你的 API Key 
+  const API_KEY = "6904975765796a928424075199859f51"; 
 
-// 页面切换函数
-function showPage(pageId) {
-  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-  document.getElementById(pageId).classList.add('active');
-  render(); // 切换时重新渲染
-}
+  let clothes = JSON.parse(localStorage.getItem('wardrobe_cloud_final')) || [];
 
-function addCloth() {
-  const name = document.getElementById("name").value;
-  if (!name) return;
-  // 默认阈值为 3
-  clothes.push({ name, count: 0, threshold: 3 });
-  document.getElementById("name").value = "";
-  render();
-}
+  // 核心：图片压缩逻辑
+  function compressImage(file) {
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = (e) => {
+        const img = new Image();
+        img.src = e.target.result;
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          const maxSide = 800; // 最大边长 800px，足够清晰且体积小
+          let w = img.width;
+          let h = img.height;
+          
+          if (w > h && w > maxSide) { h = (maxSide / w) * h; w = maxSide; }
+          else if (h > maxSide) { w = (maxSide / h) * w; h = maxSide; }
+          
+          canvas.width = w;
+          canvas.height = h;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, w, h);
+          canvas.toBlob((blob) => resolve(blob), 'image/jpeg', 0.8);
+        };
+      };
+    });
+  }
 
-function wear(index) {
-  clothes[index].count += 1;
-  render();
-}
+  function togglePage(p) {
+    document.getElementById('page-h').style.display = p === 'h' ? 'block' : 'none';
+    document.getElementById('page-s').style.display = p === 's' ? 'block' : 'none';
+    document.getElementById('nav-h').className = p === 'h' ? 'active' : '';
+    document.getElementById('nav-s').className = p === 's' ? 'active' : '';
+    render();
+  }
 
-// 修改特定衣服的阈值
-function updateThreshold(index, val) {
-  clothes[index].threshold = parseInt(val) || 1;
-  render();
-}
+  async function handleAdd() {
+    const name = document.getElementById('nameIn').value;
+    const desc = document.getElementById('descIn').value;
+    const file = document.getElementById('fileIn').files[0];
 
-function render() {
-  // 渲染主页列表
-  const list = document.getElementById("list");
-  list.innerHTML = "";
-  clothes.forEach((c, i) => {
-    list.innerHTML += `
-      <div class="card">
-        <div>👗 ${c.name}</div>
-        <div>穿了：${c.count} 次 / 目标：${c.threshold} 次后清洗</div>
-        ${c.count >= c.threshold ? '<div class="warning">🧼 该洗了！</div>' : ''}
-        <button onclick="wear(${i})">今天穿了 +1</button>
-        <button onclick="clothes[${i}].count=0;render()">已清洗 (清零)</button>
-      </div>
-    `;
-  });
+    if (!name || !file) return alert("请填写名字并拍照一张图片哦！");
 
-  // 渲染设置页列表
-  const setList = document.getElementById("settings-list");
-  setList.innerHTML = "";
-  clothes.forEach((c, i) => {
-    setList.innerHTML += `
-      <div class="settings-item">
-        <span>${c.name}</span>
-        <div>
-          <input type="number" min="1" value="${c.threshold}" 
-                 onchange="updateThreshold(${i}, this.value)" style="width: 50px"> 次
+    document.getElementById('loading').style.display = 'flex';
+
+    try {
+      // 1. 压缩图片
+      const compressedBlob = await compressImage(file);
+      
+      // 2. 构建上传数据
+      const formData = new FormData();
+      formData.append("image", compressedBlob, "cloth.jpg");
+
+      // 3. 上传云端
+      const resp = await fetch(`https://api.imgbb.com/1/upload?key=${API_KEY}`, {
+        method: "POST",
+        body: formData
+      });
+      const res = await resp.json();
+
+      if (res.success) {
+        clothes.push({
+          name: name,
+          desc: desc,
+          img: res.data.url,
+          count: 0,
+          limit: 3
+        });
+        document.getElementById('nameIn').value = '';
+        document.getElementById('descIn').value = '';
+        document.getElementById('fileIn').value = '';
+        render();
+        alert("添加成功！");
+      } else {
+        alert("云端保存失败: " + res.error.message);
+      }
+    } catch (e) {
+      alert("网络连接超时，请重试");
+    } finally {
+      document.getElementById('loading').style.display = 'none';
+    }
+  }
+
+  function render() {
+    localStorage.setItem('wardrobe_cloud_final', JSON.stringify(clothes));
+    
+    // 主页渲染
+    const listDiv = document.getElementById('clothList');
+    listDiv.innerHTML = clothes.length === 0 ? '<p style="text-align:center;color:#999;margin-top:40px;">衣柜空空如也，快去拍照吧！</p>' : "";
+    clothes.forEach((item, index) => {
+      listDiv.innerHTML += `
+        <div class="cloth-card">
+          <img src="${item.img}" class="cloth-img" onclick="window.open('${item.img}')">
+          <div class="cloth-info">
+            <div class="cloth-name">${item.name}</div>
+            <div class="cloth-desc">${item.desc || '暂无备注'}</div>
+            <div style="font-size:14px; font-weight:500;">穿了 ${item.count} / ${item.limit} 次</div>
+            ${item.count >= item.limit ? '<div class="warning">🧼 该洗了</div>' : ''}
+          </div>
+          <div class="actions">
+            <button class="btn-wear" onclick="updateCount(${index}, 1)">穿 +1</button>
+            <button onclick="updateCount(${index}, 0)">已洗</button>
+          </div>
         </div>
-      </div>
-    `;
-  });
-}
+      `;
+    });
 
-// 初始渲染
-render();
+    // 设置页渲染
+    const setListDiv = document.getElementById('setList');
+    setListDiv.innerHTML = "";
+    clothes.forEach((item, index) => {
+      setListDiv.innerHTML += `
+        <div style="padding:12px 0; border-bottom:1px solid #f0f0f0; display:flex; justify-content:space-between; align-items:center;">
+          <div style="font-size:14px;">
+            <strong>${item.name}</strong><br>
+            阈值：<input type="number" value="${item.limit}" onchange="clothes[${index}].limit=this.value; render()" style="width:40px; border:1px solid #ddd; padding:2px; border-radius:4px;"> 次
+          </div>
+          <button onclick="deleteItem(${index})" style="color:#ff3b30; border:none; background:none; font-size:14px; cursor:pointer;">🗑️ 删除</button>
+        </div>
+      `;
+    });
+  }
+
+  function updateCount(idx, type) {
+    if (type === 1) clothes[idx].count++;
+    else clothes[idx].count = 0;
+    render();
+  }
+
+  function deleteItem(idx) {
+    if (confirm("确定要删除这件衣服吗？记录将无法恢复。")) {
+      clothes.splice(idx, 1);
+      render();
+    }
+  }
+
+  render();
 </script>
 
 </body>
